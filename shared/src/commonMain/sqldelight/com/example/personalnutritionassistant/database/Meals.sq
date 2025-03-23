@@ -1,0 +1,13 @@
+CREATE TABLE Meal(
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    calories INTEGER NOT NULL,
+    timestamp TEXT NOT NULL
+);
+
+insertMeal:
+INSERT OR REPLACE INTO Meal(id, name, calories, timestamp)
+VALUES (?, ?, ?, ?);
+
+selectAll:
+SELECT * FROM Meal;
