@@ -15,6 +15,8 @@ A **Kotlin Multiplatform** project showcasing a simple nutrition-tracking applic
 2. [Tech Stack](#tech-stack)  
 3. [Project Structure](#project-structure)  
 4. [Getting Started](#getting-started)  
+5. [Running on iOS](#running-on-ios)  
+6. [Usage in SwiftUI](#usage-in-swiftui)  
 
 ---
 
@@ -62,5 +64,69 @@ To build the **Kotlin Multiplatform** shared module, run:
 - **On macOS/Linux**:
   ```bash
   ./gradlew :shared:assemble
+
+
+### Running on iOS
+
+- Open the folder in Xcode
+- Select a simulator or device
+- Run. SwiftUI code calls into the shared framework
+  
+### Usage in SwiftUI
+  ```bash
+
+import SwiftUI
+import shared
+
+struct ContentView: View {
+    @State private var meals: [Meal] = []
+    @State private var errorMessage: String = ""
+
+    var body: some View {
+        VStack {
+            Button("Fetch Meals") {
+                Task {
+                    do {
+                        
+                        let driver = DriverFactory().createDriver()
+                        
+                       
+                        let repo = MealRepositoryImpl(driver: driver)
+                        
+                        // Call the suspend function to fetch mock/real meals
+                        let result = try await repo.fetchMeals()
+                        
+                        
+                        guard let fetchedMeals = result as? [Meal] else {
+                            self.errorMessage = "Failed to parse meals from Kotlin."
+                            return
+                        }
+                        
+                       
+                        self.meals = fetchedMeals
+                        self.errorMessage = ""
+                        
+                    } catch {
+                        self.errorMessage = error.localizedDescription
+                    }
+                }
+            }
+
+            if !errorMessage.isEmpty {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+            }
+
+            List(meals, id: \.id) { meal in
+                VStack(alignment: .leading) {
+                    Text(meal.name)
+                        .font(.headline)
+                    Text("Calories: \(meal.calories)")
+                }
+            }
+        }
+        .padding()
+    }
+}
 
 
